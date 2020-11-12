@@ -27,19 +27,27 @@ See example input file in ```./data/feature_table.tsv```
 
 ## Computing Bray-Curtis beta-diversity
  ```microbiomeutils.py betadiv -i ./data/feature_table.tsv -m bray-curtis > ./data/bc_res.tsv ```
+
  ```microbiomeutils.py pcoa -i ./data/bc_res.tsv > ./data/bc_res_coords.tsv ```
 
 ## Computing Weighted-Unifrac beta-diversity
  ```microbiomeutils.py betadiv -i ./data/feature_table.tsv -m weighted-unifrac --infile-tree ./data/tree.fasttree > ./data/wuf_res.tsv ```
+
  ```microbiomeutils.py pcoa -i ./data/wuf_res.tsv > ./data/wuf_res_coords.tsv ```
 
 ## Computing taxonomic summaries
  ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 1 > data/taxonomy_L1.tsv ```
+
  ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 2 > data/taxonomy_L2.tsv ```
+
  ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 3 > data/taxonomy_L3.tsv ```
+
  ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 4 > data/taxonomy_L4.tsv ```
+
  ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 5 > data/taxonomy_L5.tsv ```
+
  ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 6 > data/taxonomy_L6.tsv ```
+
  ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 7 > data/taxonomy_L7.tsv ```
 
 # Citation
