@@ -14,8 +14,11 @@ This utility was written in Python 3.9.0 using scikit-bio v0.5.6. Once Python 3.
 
 ## Help
 ```microbiomeutils.py -h```
+
 ```microbiomeutils.py betadiv -h```
+
 ```microbiomeutils.py pcoa -h```
+
 ```microbiomeutils.py taxsum -h```
 
 ## Data format
