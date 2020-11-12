@@ -54,6 +54,8 @@ See example input file in ```./data/feature_table.tsv```
 If you use microbiomeutils in your work, please cite:
 
 Tremblay, Julien
+
 microbiomeutils 0.9 : Microbiome utilities
+
 https://github.com/jtremblay/microbiomeutils
 
