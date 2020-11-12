@@ -11,6 +11,7 @@ can be already efficiently acomplished using the Rarefaction Tool Kit (RTK) pack
 
 ## Installation
 This utility was written in Python 3.9.0 using scikit-bio v0.5.6. Once Python 3.9.0 is installed, run ```pip install "scikit-bio==0.5.6"``` or ```pip install scikit-bio```
+Then clone this repo : ```git clone https://github.com/jtremblay/microbiomeutils.git``` and run ```microbiomeutils.py``` with the appropriate arguments as described below:
 
 ## Help
 ```microbiomeutils.py -h```
