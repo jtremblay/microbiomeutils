@@ -5,7 +5,7 @@ A Python utility to generate beta-diversity distance matrix + pcoa
 and taxonomic summary from a feature table. The stated goal of this utility
 is to avoid using .biom tables whose usage was enforced in later QIIME releases.
 I ended up realizing that myself and collaborators pretty much never use these 
-.biom tables anyways. So why bother generating them in the first place? This utility also provide a great alternative to QIIME1 or QIIME without going through a complex installation process or dealing with .qza files.
+.biom tables anyways. So why bother generating them in the first place? This utility also provide a great alternative to QIIME1 or QIIME2 without going through a complex installation process or dealing with .qza files.
 Functions for alpha diversity metrics generation were not implemented in this utility because it
 can be already efficiently acomplished using the Rarefaction Tool Kit (RTK) package - https://github.com/hildebra/Rarefaction/ - which I recommend.
 
