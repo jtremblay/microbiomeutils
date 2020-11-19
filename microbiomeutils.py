@@ -1,6 +1,6 @@
 #!/usr/bin/env python
  
-"""A Python utility to generate beta-diversity distance matrix + pcoa
+"""A Python script to generate beta-diversity distance matrix + pcoa
 and taxonomic summary from a feature table. The stated goal of this utility
 is to avoid using .biom tables whose usage was enforced in later QIIME releases.
 I ended up realizing that myself and collaborators pretty much never use these 
@@ -19,7 +19,10 @@ sys.path.append(cwd + '/nrc')
 from nrc.utils import *
 from skbio.diversity import beta_diversity
 from skbio import TreeNode
+from emperor import Emperor
+from skbio import OrdinationResults
 from numpy import array, concatenate, repeat, zeros, nan
+import pandas as pd
 import textwrap
 
 def betadiv(infile_feature_table, metric="bc", infile_tree=False):
@@ -80,13 +83,17 @@ Thank you.'''))
     parser_ts = subparsers.add_parser('pcoa')
     parser_ts.add_argument('-i', '--infile-distance-matrix', help="Input file", type=argparse.FileType('r'))
     
+    parser_ts = subparsers.add_parser('emperor')
+    parser_ts.add_argument('-i', '--infile-coords', help="Input file", type=argparse.FileType('r'))
+    parser_ts.add_argument('-m', '--mapping-file', help="Mapping file", type=argparse.FileType('r'))
+    parser_ts.add_argument('-o', '--outdir', help="Output directory")
+    
     args = parser.parse_args(arguments)
     
     if args.command == 'betadiv':
         infile_feature_table = os.path.abspath(args.infile_feature_table.name)
-        sys.stderr.write("betadiv\n")
+        sys.stderr.write("[betadiv]\n")
         if args.infile_tree is None and args.metric == "weighted-unifrac":
-        #infile_tree = os.path.abspath(args.infile_tree.name)
             raise ValueError('weighted-unifrac needs a tree supplied. --infile-tree needed')
         
         if args.metric == "bray-curtis":
@@ -96,13 +103,30 @@ Thank you.'''))
     
     elif args.command == 'taxsum':
         infile_feature_table = os.path.abspath(args.infile_feature_table.name)
-        sys.stderr.write("taxsum\n")
+        sys.stderr.write("[taxsum]\n")
         taxsum(infile_feature_table, args.sumtype, args.level)
     
     elif args.command == 'pcoa':
-        sys.stderr.write("pcoa\n")
+        sys.stderr.write("[pcoa]\n")
         infile_distance_matrix = os.path.abspath(args.infile_distance_matrix.name)
         ord_res = do_pcoa(infile_distance_matrix)
+    
+    elif args.command == 'emperor':
+        sys.stderr.write("[emperor]\n")
+        metadata = pd.read_csv(args.mapping_file, sep='\t', index_col='#SampleID')
+        ordination = OrdinationResults.read(args.infile_coords)
+
+        # the remote argument refers to where the support files will be located
+        # relative to the plot itself i.e. index.html.
+        emp = Emperor(ordination, metadata, remote='.')
+        output_folder = args.outdir # new folder where data will be saved
+
+        # create an output directory
+        os.makedirs(output_folder, exist_ok=True)
+
+        with open(os.path.join(output_folder, 'index.html'), 'w') as f:
+            f.write(emp.make_emperor(standalone=True))
+            emp.copy_support_files(output_folder)
 
      
 if __name__ == '__main__':
