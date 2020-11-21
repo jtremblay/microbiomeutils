@@ -35,10 +35,21 @@ def parse_feature_table(lines,count_map_f=int):
     # iterate over lines in the OTU table -- keep track of line number 
     # to support legacy (Qiime 1.2.0 and earlier) OTU tables
     for i, line in enumerate(lines):
-        line = line.strip()
+        #line = line.strip()
         
         if line:
-            if i == 0 and line.startswith(('#FEATURE_ID', '#OTU ID', '#FEATURE ID', '#FEATURE', '#FEATUREID')) and not sample_ids:
+            if i == 0 and line.startswith('\t') and not sample_ids:
+                line = line.lstrip()
+                try:
+                    sample_ids, has_metadata = process_feature_table_sample_ids(line.strip().split('\t')[0:])
+                except ValueError:
+                    raise ValueError(
+                     "Error parsing sample IDs in OTU table. Appears to be a"+\
+                     " legacy OTU table. Sample ID line:\n %s" % line)
+                
+                sys.stderr.write("sample_ids: " + str(sample_ids) + "\n")
+
+            elif i == 0 and line.startswith(('#FEATURE_ID', '#OTU ID', '#FEATURE ID', '#FEATURE', '#FEATUREID', 'contig_id', 'gene_id')) and not sample_ids:
                 # we've got a legacy OTU table
                 try:
                     sample_ids, has_metadata = process_feature_table_sample_ids(line.strip().split('\t')[1:])
@@ -88,7 +99,7 @@ def parse_feature_table(lines,count_map_f=int):
 
 #####
 def getOtuTable(otu_source):
-    """Returns parsed OTU table from putative OTU source."""
+    """Returns parsed OTU/FEATURE table from putative OTU/FEATURE source."""
     
     #if we have a string starting with #, assume it's an OTU file,
     #otherwise assume it's a path
