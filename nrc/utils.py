@@ -38,7 +38,9 @@ def parse_feature_table(lines,count_map_f=int):
         #line = line.strip()
         
         if line:
-            if i == 0 and line.startswith('\t') and not sample_ids:
+            if line.startswith('# '):
+                next
+            if line.startswith('\t') and not sample_ids:
                 line = line.lstrip()
                 try:
                     sample_ids, has_metadata = process_feature_table_sample_ids(line.strip().split('\t')[0:])
@@ -49,7 +51,7 @@ def parse_feature_table(lines,count_map_f=int):
                 
                 sys.stderr.write("sample_ids: " + str(sample_ids) + "\n")
 
-            elif i == 0 and line.startswith(('#FEATURE_ID', '#OTU ID', '#FEATURE ID', '#FEATURE', '#FEATUREID', 'contig_id', 'gene_id')) and not sample_ids:
+            elif line.startswith(('#FEATURE_ID', '#OTU ID', '#FEATURE ID', '#FEATURE', '#FEATUREID', 'contig_id', 'gene_id')) and not sample_ids:
                 # we've got a legacy OTU table
                 try:
                     sample_ids, has_metadata = process_feature_table_sample_ids(line.strip().split('\t')[1:])
