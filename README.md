@@ -4,13 +4,12 @@
 A Python utility to generate beta-diversity distance matrix + pcoa
 and taxonomic summary from a feature table. The stated goal of this utility
 is to avoid using .biom tables whose usage was enforced in later QIIME releases.
-I ended up realizing that myself and collaborators pretty much never use these 
-.biom tables anyways. So why bother generating them in the first place? This utility also provide a great alternative to QIIME1 or QIIME2 without going through a complex installation process or dealing with .qza files.
+This utility enables the computation of beta diversity metrics, emperor interactive figures and taxonomic summaries without going through the complex installation process inherent to QIIME or dealing with .qza files.
 Functions for alpha diversity metrics generation were not implemented in this utility because it
 can be already efficiently acomplished using the Rarefaction Tool Kit (RTK) package - https://github.com/hildebra/Rarefaction/ - which I recommend.
 
 ## Installation
-This utility was written in Python 3.9.0 using scikit-bio v0.5.6. Once Python 3.9.0 is installed, run ```pip install "scikit-bio==0.5.6"``` or ```pip install scikit-bio```. Also install emperor: ```pip install emperor```.
+This utility was written in Python 3.9.0 using scikit-bio v0.5.6. Once Python 3.9.0 is installed, run ```pip install numpy```, ```pip install "scikit-bio==0.5.6"``` or ```pip install scikit-bio```. Also install emperor: ```pip install emperor```.
 Then clone this repo : ```git clone https://github.com/jtremblay/microbiomeutils.git``` and run ```microbiomeutils.py``` with the appropriate arguments as described below:
 
 ## Help
