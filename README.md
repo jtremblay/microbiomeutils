@@ -1,7 +1,7 @@
 # microbiomeutils
 
 ## Summary
-A Python utility to generate beta-diversity distance matrix + pcoa
+A lightweight Python utility to generate beta-diversity distance matrix + pcoa
 and taxonomic summary from a feature table. The stated goal of this utility
 is to avoid using .biom tables whose usage was enforced in later QIIME releases.
 This utility enables the computation of beta diversity metrics, emperor interactive figures and taxonomic summaries without going through the complex installation process inherent to QIIME or dealing with .qza files.
