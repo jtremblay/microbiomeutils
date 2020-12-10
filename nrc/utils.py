@@ -207,6 +207,9 @@ def sum_counts_by_consensus(feature_table, level, missing_name='Other'):
     result = {}
     sample_map = dict([(s,i) for i,s in enumerate(feature_table[0])])
     for counts, consensus in zip(feature_table[2], feature_table[3]):
+        counts = [float(i) for i in counts]
+        #print("counts:")
+        #print(counts)
         consensus = list(consensus)
         n_ranks = len(consensus)
         if n_ranks > level:
