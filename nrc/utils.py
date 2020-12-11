@@ -256,8 +256,8 @@ def sum_counts_by_consensus(feature_table, level, missing_name='Other'):
 def write_summarize_taxa(summary, header, output_fp, delimiter=';', transposed_output=False):
     """ """
     # Fixing headers
-    pattern = compile('\W')
-    header = [sub(pattern, '.', label) for label in header]
+    #pattern = compile('\W')
+    #header = [sub(pattern, '.', label) for label in header]
 
     if transposed_output:
          # transposing the summary
