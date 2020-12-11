@@ -17,7 +17,7 @@ file format which is not needed in many case.
 """
 import sys
 import os
-from numpy import array, concatenate, repeat, zeros, nan, asarray, float, where, isnan, float64
+from numpy import array, concatenate, repeat, zeros, nan, asarray, float, where, isnan, float64, around
 from re import compile, sub
 from skbio.stats.ordination import pcoa
 from skbio.stats.distance import DistanceMatrix
@@ -207,9 +207,7 @@ def sum_counts_by_consensus(feature_table, level, missing_name='Other'):
     result = {}
     sample_map = dict([(s,i) for i,s in enumerate(feature_table[0])])
     for counts, consensus in zip(feature_table[2], feature_table[3]):
-        counts = [float(i) for i in counts]
-        #print("counts:")
-        #print(counts)
+        counts = counts.astype(float)
         consensus = list(consensus)
         n_ranks = len(consensus)
         if n_ranks > level:
@@ -225,6 +223,10 @@ def sum_counts_by_consensus(feature_table, level, missing_name='Other'):
             result[consensus] += counts
         else:
             result[consensus] = counts.copy()
+    
+    #for consensus in result:
+    #    print("res")
+    #    print(result[consensus])
 
     return result, sample_map
 
@@ -282,7 +284,7 @@ def format_summarize_taxa(summary, header, delimiter=';'):
         line = [delimiter.join(taxon)]
 
         # add on otu counts
-        line.extend(map(str, row[1:]))
+        line.extend(map(str, around(row[1:], 3)))
 
         yield "%s\n" % '\t'.join(line)
 
