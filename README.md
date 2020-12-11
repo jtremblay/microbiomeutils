@@ -60,7 +60,7 @@ If you use microbiomeutils in your work, please cite:
 
 Tremblay, Julien
 
-microbiomeutils 0.9.1 : Microbiome utilities
+microbiomeutils 0.9.2 : Microbiome utilities
 
 https://github.com/jtremblay/microbiomeutils
 
