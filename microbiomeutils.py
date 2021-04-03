@@ -113,7 +113,8 @@ Thank you.'''))
     
     elif args.command == 'emperor':
         sys.stderr.write("[emperor]\n")
-        metadata = pd.read_csv(args.mapping_file, sep='\t', index_col='#SampleID')
+        metadata = pd.read_csv(args.mapping_file, sep='\t', index_col='#SampleID', dtype={'#SampleID':'string'})
+
         ordination = OrdinationResults.read(args.infile_coords)
 
         # the remote argument refers to where the support files will be located
