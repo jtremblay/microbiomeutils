@@ -64,7 +64,7 @@ def main(arguments):
 If you use microbiomeutils in your work, please cite:
 
     Tremblay, Julien
-    microbiomeutils 0.9 : Microbiome utilities
+    microbiomeutils 0.9.3 : Microbiome utilities
     https://github.com/jtremblay/microbiomeutils
     
 Thank you.'''))
@@ -119,7 +119,7 @@ Thank you.'''))
 
         # the remote argument refers to where the support files will be located
         # relative to the plot itself i.e. index.html.
-        emp = Emperor(ordination, metadata, remote='.')
+        emp = Emperor(ordination, metadata, remote='.', ignore_missing_samples=True)
         output_folder = args.outdir # new folder where data will be saved
 
         # create an output directory
