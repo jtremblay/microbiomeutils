@@ -41,8 +41,15 @@ def betadiv(infile_feature_table, metric="bc", infile_tree=False):
         wuf_dm = beta_diversity("weighted_unifrac", data, sample_names, tree=tree, otu_ids=feature_ids, validate=False) 
         #print(wuf_dm)
         wuf_dm.write(sys.stdout, delimiter='\t')
+    
+    elif metric == "unweighted-unifrac":
+        # For wuf, include tree. put validate=False in beta_diversity() because even if tree is rooted, returns that tree is not rooted...
+        tree = TreeNode.read(infile_tree)
+        uf_dm = beta_diversity("unweighted_unifrac", data, sample_names, tree=tree, otu_ids=feature_ids, validate=False) 
+        #print(wuf_dm)
+        uf_dm.write(sys.stdout, delimiter='\t')
     else:
-        raise ValueError('Only support for bray-curtis and weighted-unifrac metrics. ' + 'Metric ' + metric + 'is not supported.')
+        raise ValueError('Only support for bray-curtis, unweighted_unifrac and weighted-unifrac metrics. ' + 'Metric ' + metric + 'is not supported.')
 
 def taxsum(infile_feature_table, sumtype, level):
     # Then perform taxonomic summary open(feature_table_fp, 'U')
@@ -64,14 +71,14 @@ def main(arguments):
 If you use microbiomeutils in your work, please cite:
 
     Tremblay, Julien
-    microbiomeutils 0.9.3 : Microbiome utilities
+    microbiomeutils 0.9 : Microbiome utilities
     https://github.com/jtremblay/microbiomeutils
     
 Thank you.'''))
     subparsers = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest="command")
     parser_bd = subparsers.add_parser('betadiv')
     parser_bd.add_argument('-i', '--infile-feature-table', help="Input file", type=argparse.FileType('r'))
-    parser_bd.add_argument("-m", "--metric", help="Diversity metric (default: bray-curtis)", choices=["bray-curtis", "weighted-unifrac"], default="bray-curtis")
+    parser_bd.add_argument("-m", "--metric", help="Diversity metric (default: bray-curtis)", choices=["bray-curtis", "weighted-unifrac", "unweighted-unifrac"], default="bray-curtis")
     parser_bd.add_argument("-t", "--infile-tree", help="Tree file (for weighted uniFrac)", type=argparse.FileType('r'))
                                                                                      
     #parser_bd.set_defaults(func=betadiv)
