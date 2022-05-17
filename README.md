@@ -1,4 +1,4 @@
-# microbiomeutils
+# MicrobiomeUtils
 
 ## Summary
 A lightweight Python utility to generate beta-diversity distance matrix + pcoa
