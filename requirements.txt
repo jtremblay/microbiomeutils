@@ -1,0 +1,9 @@
+# Runtime dependencies for microbiomeutils (Python 3.11).
+# Pinned to the environment verified against the reference outputs in data/
+# (meco/python/3.11.6). See journal.md before upgrading scikit-bio.
+scikit-bio==0.5.9
+# scikit-bio 0.5.9 declares scipy<=1.10.1
+scipy==1.10.1
+numpy==1.26.4
+pandas==2.2.0
+emperor==1.0.4
