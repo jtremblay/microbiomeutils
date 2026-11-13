@@ -17,7 +17,7 @@ file format which is not needed in many case.
 """
 import sys
 import os
-from numpy import array, concatenate, repeat, zeros, nan, asarray, float, where, isnan, float64, around
+from numpy import array, concatenate, repeat, zeros, nan, asarray, where, isnan, float64, around
 from re import compile, sub
 from skbio.stats.ordination import pcoa
 from skbio.stats.distance import DistanceMatrix
@@ -116,7 +116,7 @@ def getOtuTable(otu_source):
                 "Tried to read OTUs from string starting with # but got "+e)
     else:
         try:
-            otu_file = open(otu_source, 'U')
+            otu_file = open(otu_source, 'r')
         except (TypeError, IOError):
             raise OtuMissingError(
                 "Couldn't read FEATURE table file at path: %s" % otu_source)
@@ -131,7 +131,7 @@ def getTree(tree_source):
         tree = tree_source    #accept tree object directly for tests
     elif tree_source:
         try:
-            f = open(tree_source, 'U')
+            f = open(tree_source, 'r')
         except (TypeError, IOError):
             raise TreeMissingError(
                 "Couldn't read tree file at path: %s" % tree_source)
