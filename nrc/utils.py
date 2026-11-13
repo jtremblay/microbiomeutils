@@ -1,8 +1,8 @@
 __author__ = "Julien Tremblay"
 __copyright__ = "Copyright 2026" 
 __credits__ = ["Julien Tremblay"]
-__license__ = "GPL"
-__version__ = "1.0.0"
+__license__ = "MIT"
+__version__ = "0.9.5"
 __maintainer__ = "Julien Tremblay"
 __email__ = "jtremblay514@gmail.com"
 __status__ = "Release"

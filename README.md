@@ -1,66 +1,126 @@
 # MicrobiomeUtils
 
 ## Summary
-A lightweight Python utility to generate beta-diversity distance matrix + pcoa
-and taxonomic summary from a feature table. The stated goal of this utility
-is to avoid using .biom tables whose usage was enforced in later QIIME releases.
-This utility enables the computation of beta diversity metrics, emperor interactive figures and taxonomic summaries without going through the complex installation process inherent to QIIME or dealing with .qza files.
-Functions for alpha diversity metrics generation were not implemented in this utility because it
-can be already efficiently acomplished using the Rarefaction Tool Kit (RTK) package - https://github.com/hildebra/Rarefaction/ - which I recommend.
+A lightweight Python utility to compute beta-diversity distance matrices, PCoA ordinations,
+interactive 3D PCoA plots (EMPeror) and taxonomic summaries directly from a tab-separated
+feature table.
+
+The goal is to avoid the `.biom` and `.qza` formats whose use was enforced in later QIIME
+releases, and the complex QIIME installation that goes with them.
+
+Alpha-diversity metrics are not implemented, as they are already efficiently computed by the
+Rarefaction Tool Kit (RTK) package, which I recommend: https://github.com/hildebra/Rarefaction/
 
 ## Installation
-This utility was written in Python 3.9.0 using scikit-bio v0.5.6. Once Python 3.9.0 is installed, run ```pip install numpy```, ```pip install "scikit-bio==0.5.6"``` or ```pip install scikit-bio```. Also install emperor: ```pip install emperor```.
-Then clone this repo : ```git clone https://github.com/jtremblay/microbiomeutils.git``` and run ```microbiomeutils.py``` with the appropriate arguments as described below:
+Requires Python 3.11.
 
-## Help
-```microbiomeutils.py -h```
+```sh
+git clone https://github.com/jtremblay/microbiomeutils.git
+cd microbiomeutils
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
-```microbiomeutils.py betadiv -h```
+`requirements.txt` pins the versions the tool was tested with (notably scikit-bio 0.5.9).
+Installing newer versions of scikit-bio or emperor is not yet supported.
 
-```microbiomeutils.py pcoa -h```
+## Usage
+```sh
+./microbiomeutils.py -h
+./microbiomeutils.py <subcommand> -h
+```
 
-```microbiomeutils.py emperor -h```
+| Subcommand | Input | Output |
+|---|---|---|
+| `betadiv` | feature table (+ tree for UniFrac) | distance matrix |
+| `pcoa` | distance matrix | PCoA ordination results |
+| `emperor` | PCoA ordination results + mapping file | interactive 3D plot (HTML folder) |
+| `taxsum` | feature table with taxonomy | taxonomic summary table |
 
-```microbiomeutils.py taxsum -h```
+`betadiv`, `pcoa` and `taxsum` write their results to standard output; redirect it to a file.
+Progress messages are written to standard error.
 
-## Data format
-Takes in input a tab-separated value (tsv) feature table with just one header line that can start with : '#FEATURE_ID', '#OTU ID', '#FEATURE ID', '#FEATURE' or '#FEATUREID' string. Script won't work with multi-line header.
-See example input file in ```./data/feature_table.tsv```
+## Input formats
 
-## Computing Bray-Curtis beta-diversity
- ```microbiomeutils.py betadiv -i ./data/feature_table.tsv -m bray-curtis > ./data/bc_res.tsv ```
+### Feature table
+A tab-separated file with one feature (OTU, ASV, gene, ...) per row and one sample per column.
+See `./data/feature_table.tsv` for an example.
 
- ```microbiomeutils.py pcoa -i ./data/bc_res.tsv > ./data/bc_res_coords.tsv ```
+- **Header line:** the first non-comment line holds the sample names. It may start with
+  `#FEATURE_ID`, `#FEATURE ID`, `#FEATUREID`, `#FEATURE`, `#OTU ID`, `contig_id` or `gene_id`.
+- **Comment lines:** lines starting with `#` before the header (for example QIIME's
+  `# Constructed from biom file`) are ignored, as are blank lines.
+- **Counts:** integers or decimal numbers.
+- **Taxonomy (optional, required by `taxsum`):** the last column, named `taxonomy`,
+  `Consensus Lineage` or `OTU Metadata`, with ranks separated by `;`
+  (e.g. `k__Bacteria;p__Firmicutes;c__Bacilli`).
 
-## Computing Weighted-Unifrac beta-diversity
- ```microbiomeutils.py betadiv -i ./data/feature_table.tsv -m weighted-unifrac --infile-tree ./data/tree.fasttree > ./data/wuf_res.tsv ```
+```
+#FEATURE_ID	S1	S2	S3	taxonomy
+f1	10	0	3	k__Bacteria;p__Firmicutes;c__Bacilli
+f2	4	7	0	k__Bacteria;p__Proteobacteria
+```
 
- ```microbiomeutils.py pcoa -i ./data/wuf_res.tsv > ./data/wuf_res_coords.tsv ```
+### Tree (UniFrac only)
+A Newick tree whose tip labels match the feature IDs of the feature table
+(see `./data/tree.fasttree`).
 
-## Computing taxonomic summaries
- ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 1 > data/taxonomy_L1.tsv ```
+### Mapping file (`emperor` only)
+A tab-separated sample metadata file with a `#SampleID` column holding the sample names
+(see `./data/mapping_file.tsv`). Its other columns can be used to color the plot.
 
- ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 2 > data/taxonomy_L2.tsv ```
+## Examples
 
- ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 3 > data/taxonomy_L3.tsv ```
+### Bray-Curtis beta diversity
+```sh
+./microbiomeutils.py betadiv -i ./data/feature_table.tsv -m bray-curtis > ./data/bc_res.tsv
+./microbiomeutils.py pcoa -i ./data/bc_res.tsv > ./data/bc_res_coords.tsv
+```
 
- ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 4 > data/taxonomy_L4.tsv ```
+### Weighted and unweighted UniFrac beta diversity
+```sh
+./microbiomeutils.py betadiv -i ./data/feature_table.tsv -m weighted-unifrac \
+    --infile-tree ./data/tree.fasttree > ./data/wuf_res.tsv
+./microbiomeutils.py pcoa -i ./data/wuf_res.tsv > ./data/wuf_res_coords.tsv
 
- ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 5 > data/taxonomy_L5.tsv ```
+./microbiomeutils.py betadiv -i ./data/feature_table.tsv -m unweighted-unifrac \
+    --infile-tree ./data/tree.fasttree > ./data/uwuf_res.tsv
+./microbiomeutils.py pcoa -i ./data/uwuf_res.tsv > ./data/uwuf_res_coords.tsv
+```
 
- ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 6 > data/taxonomy_L6.tsv ```
+### Interactive 3D PCoA plot with EMPeror
+```sh
+./microbiomeutils.py emperor -i ./data/wuf_res_coords.tsv -m ./data/mapping_file.tsv \
+    -o ./data/weighted_unifrac_3d_plot
+```
+Open `./data/weighted_unifrac_3d_plot/index.html` in a web browser.
 
- ```microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 7 > data/taxonomy_L7.tsv ```
+### Taxonomic summaries
+`-l` sets the taxonomic level (1 = first rank, e.g. kingdom; default: 3).
+Lineages shorter than the requested level are padded with `Other`.
+`-t relative` gives relative abundances (each sample sums to 1) instead of absolute counts
+(default: `absolute`).
 
-## Generating 3d PCoA plots with emperor
- ```microbiomeutils.py emperor -i ./data/wuf_res_coords.tsv -m ./data/mapping_file.tsv -o ./data/weighted_unifrac_3d_plot```
+```sh
+for level in 1 2 3 4 5 6 7; do
+    ./microbiomeutils.py taxsum -i ./data/feature_table.tsv -l $level > ./data/taxonomy_L$level.tsv
+done
 
-# Citation
+./microbiomeutils.py taxsum -i ./data/feature_table.tsv -l 6 -t relative > ./data/taxonomy_L6_relative.tsv
+```
+
+## Running the tests
+```sh
+pip install -r requirements-dev.txt
+python3 -m pytest tests/
+```
+
+## License
+MIT; see [LICENSE](LICENSE).
+
+## Citation
 If you use microbiomeutils in your work, please cite:
 
-Tremblay, Julien
-
-microbiomeutils 0.9.4 : Microbiome utilities
-
+Tremblay, Julien. microbiomeutils 0.9.5: Microbiome utilities.
 https://github.com/jtremblay/microbiomeutils
-

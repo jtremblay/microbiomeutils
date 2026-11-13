@@ -68,7 +68,7 @@ def main(arguments):
 If you use microbiomeutils in your work, please cite:
 
     Tremblay, Julien
-    microbiomeutils 0.9 : Microbiome utilities
+    microbiomeutils 0.9.5 : Microbiome utilities
     https://github.com/jtremblay/microbiomeutils
     
 Thank you.'''))
