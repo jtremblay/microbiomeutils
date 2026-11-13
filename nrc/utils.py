@@ -1,12 +1,10 @@
-#!/usr/bin/env python
-
 __author__ = "Julien Tremblay"
-__copyright__ = "Copyright 2020, NRC tools" 
+__copyright__ = "Copyright 2026" 
 __credits__ = ["Julien Tremblay"]
 __license__ = "GPL"
 __version__ = "1.0.0"
 __maintainer__ = "Julien Tremblay"
-__email__ = "julien.tremblay@nrc-cnrc.gc.ca"
+__email__ = "jtremblay514@gmail.com"
 __status__ = "Release"
 
 
@@ -41,7 +39,6 @@ def parse_feature_table(lines,count_map_f=int):
     # iterate over lines in the feature table -- keep track of line number 
     # to support legacy (Qiime 1.2.0 and earlier) feature tables
     for i, line in enumerate(lines):
-        #line = line.strip()
         
         if line.strip():
             if line.startswith('\t') and not sample_ids:
@@ -103,7 +100,6 @@ def parse_feature_table(lines,count_map_f=int):
     return sample_ids, feature_ids, (feature_table), metadata
 
 
-#####
 def getFeatureTable(feature_source):
     """Returns parsed feature table from putative feature source."""
     
@@ -151,8 +147,7 @@ def process_feature_table_sample_ids(sample_id_fields):
     # column is included.
     return sample_ids, has_metadata
 
-###
-#Taxonomic summary
+# Taxonomic summary
 def make_summary(feature_table, level, upper_percentage, lower_percentage): 
     """Returns taxonomy summary data
 
@@ -210,41 +205,10 @@ def sum_counts_by_consensus(feature_table, level, missing_name='Other'):
         else:
             result[consensus] = counts.copy()
     
-    #for consensus in result:
-    #    print("res")
-    #    print(result[consensus])
-
     return result, sample_map
-
-#def add_summary_mapping(feature_table, mapping, level): 
-#    """Returns sample summary of sample counts by taxon
-#    
-#    Summary is keyed by sample_id, valued by feature counts for each taxon
-#    Taxon order is a list of taxons where idx n corresponds to feature count idx n
-#    """
-#    counts_by_consensus, sample_map = sum_counts_by_consensus(feature_table, level)
-#    
-#    summary = defaultdict(list)
-#    for row in mapping:
-#        # grab feature idx if the sample exists, otherwise ignore it
-#        sample_id = row[0]
-#        if sample_id not in sample_map:
-#            continue
-#        feature_idx = sample_map[sample_id]
-#
-#        for consensus, counts in sorted(counts_by_consensus.items()):
-#            summary[sample_id].append(counts[feature_idx])
-#
-#    taxon_order = sorted(counts_by_consensus.keys())
-#
-#    return summary, taxon_order
 
 def write_summarize_taxa(summary, header, output_fp, delimiter=';', transposed_output=False):
     """ """
-    # Fixing headers
-    #pattern = compile('\W')
-    #header = [sub(pattern, '.', label) for label in header]
-
     if transposed_output:
          # transposing the summary
          summary = [[r[col] for r in summary] for col in range(len(summary[0]))]
@@ -255,11 +219,8 @@ def write_summarize_taxa(summary, header, output_fp, delimiter=';', transposed_o
          header = ['SampleID'] + [delimiter.join(taxon) for taxon in summary[0]]
          summary = summary[1:]
     
-    #of = open(output_fp,'w')
     for line in format_summarize_taxa(summary, header, delimiter):
-        #of.write(line)
         sys.stdout.write(line)
-    #of.close()
 
 def format_summarize_taxa(summary, header, delimiter=';'):
     """Formats a summarized taxonomy table for output"""

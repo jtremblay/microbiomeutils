@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
  
 """A Python script to generate beta-diversity distance matrix + pcoa
 and taxonomic summary from a feature table. The stated goal of this utility
@@ -6,7 +6,7 @@ is to avoid using .biom tables whose usage was enforced in later QIIME releases.
 I ended up realizing that myself and collaborators pretty much never use these 
 .biom tables anyways. So why bother generating them in the first place?
 
-Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
+Julien Tremblay - jtremblay514@gmail.com
 """
  
 import os
@@ -32,21 +32,18 @@ def betadiv(infile_feature_table, metric="bc", infile_tree=False):
 
     if metric == "bray-curtis":
         bc_dm = beta_diversity("braycurtis", data, sample_names)
-        #print(bc_dm)
         bc_dm.write(sys.stdout, delimiter='\t')
 
     elif metric == "weighted-unifrac":
-        # For wuf, include tree. put validate=False in beta_diversity() because even if tree is rooted, returns that tree is not rooted...
+        # UniFrac needs the tree. validate=False in beta_diversity() because even if tree is rooted, returns that tree is not rooted...
         tree = TreeNode.read(infile_tree)
         wuf_dm = beta_diversity("weighted_unifrac", data, sample_names, tree=tree, otu_ids=feature_ids, validate=False) 
-        #print(wuf_dm)
         wuf_dm.write(sys.stdout, delimiter='\t')
     
     elif metric == "unweighted-unifrac":
-        # For wuf, include tree. put validate=False in beta_diversity() because even if tree is rooted, returns that tree is not rooted...
+        # UniFrac needs the tree. validate=False in beta_diversity() because even if tree is rooted, returns that tree is not rooted...
         tree = TreeNode.read(infile_tree)
         uf_dm = beta_diversity("unweighted_unifrac", data, sample_names, tree=tree, otu_ids=feature_ids, validate=False) 
-        #print(wuf_dm)
         uf_dm.write(sys.stdout, delimiter='\t')
     else:
         raise ValueError('Only support for bray-curtis, unweighted_unifrac and weighted-unifrac metrics. ' + 'Metric ' + metric + 'is not supported.')
@@ -81,12 +78,10 @@ Thank you.'''))
     parser_bd.add_argument("-m", "--metric", help="Diversity metric (default: bray-curtis)", choices=["bray-curtis", "weighted-unifrac", "unweighted-unifrac"], default="bray-curtis")
     parser_bd.add_argument("-t", "--infile-tree", help="Tree file (for weighted uniFrac)", type=argparse.FileType('r'))
                                                                                      
-    #parser_bd.set_defaults(func=betadiv)
     parser_ts = subparsers.add_parser('taxsum')
     parser_ts.add_argument('-i', '--infile-feature-table', help="Input file", type=argparse.FileType('r'), required=True)
     parser_ts.add_argument("-t", "--sumtype", help="Summary type (default: absolute)", choices=["absolute", "relative"], default="absolute")
     parser_ts.add_argument("-l", "--level", help="Level <int> 1 to 7", choices=["1","2","3","4","5","6","7", "8"], default="3")
-    #parser_bd.set_defaults(func=taxsum)
     parser_ts = subparsers.add_parser('pcoa')
     parser_ts.add_argument('-i', '--infile-distance-matrix', help="Input file", type=argparse.FileType('r'), required=True)
     
