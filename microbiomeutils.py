@@ -27,7 +27,7 @@ import textwrap
 
 def betadiv(infile_feature_table, metric="bc", infile_tree=False):
 
-    sample_names, feature_ids, data, lineages = getOtuTable(infile_feature_table)
+    sample_names, feature_ids, data, lineages = getFeatureTable(infile_feature_table)
     data = array(data).transpose()
 
     if metric == "bray-curtis":
@@ -52,17 +52,17 @@ def betadiv(infile_feature_table, metric="bc", infile_tree=False):
         raise ValueError('Only support for bray-curtis, unweighted_unifrac and weighted-unifrac metrics. ' + 'Metric ' + metric + 'is not supported.')
 
 def taxsum(infile_feature_table, sumtype, level):
-    # Then perform taxonomic summary open(feature_table_fp, 'U')
-    if sumtype == "absolute":
-        feature_table = parse_feature_table(open(infile_feature_table, 'r'))
-        #feature_table_rel = convert_feature_table_relative(feature_table)
-        summary, header = make_summary(feature_table, int(level), None, None)
-        write_summarize_taxa(summary, header, sys.stdout, delimiter=";", transposed_output=False)
-    elif sumtype == "relative":
-        feature_table = parse_feature_table(open(infile_feature_table, 'r'))
-        feature_table_rel = convert_feature_table_relative(feature_table)
-        summary, header = make_summary(feature_table_rel, int(level), None, None)
-        write_summarize_taxa(summary, header, sys.stdout, delimiter=";", transposed_output=False)
+    with open(infile_feature_table, 'r') as fh:
+        feature_table = parse_feature_table(fh)
+
+    if not feature_table[3]:
+        raise ValueError("No taxonomy found in feature table " + infile_feature_table +
+                         ": the last column header must be 'taxonomy', 'Consensus Lineage' or 'OTU Metadata'.")
+
+    if sumtype == "relative":
+        feature_table = convert_feature_table_relative(feature_table)
+    summary, header = make_summary(feature_table, int(level), None, None)
+    write_summarize_taxa(summary, header, sys.stdout, delimiter=";", transposed_output=False)
 
 def main(arguments):
     
@@ -77,31 +77,31 @@ If you use microbiomeutils in your work, please cite:
 Thank you.'''))
     subparsers = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest="command")
     parser_bd = subparsers.add_parser('betadiv')
-    parser_bd.add_argument('-i', '--infile-feature-table', help="Input file", type=argparse.FileType('r'))
+    parser_bd.add_argument('-i', '--infile-feature-table', help="Input file", type=argparse.FileType('r'), required=True)
     parser_bd.add_argument("-m", "--metric", help="Diversity metric (default: bray-curtis)", choices=["bray-curtis", "weighted-unifrac", "unweighted-unifrac"], default="bray-curtis")
     parser_bd.add_argument("-t", "--infile-tree", help="Tree file (for weighted uniFrac)", type=argparse.FileType('r'))
                                                                                      
     #parser_bd.set_defaults(func=betadiv)
     parser_ts = subparsers.add_parser('taxsum')
-    parser_ts.add_argument('-i', '--infile-feature-table', help="Input file", type=argparse.FileType('r'))
+    parser_ts.add_argument('-i', '--infile-feature-table', help="Input file", type=argparse.FileType('r'), required=True)
     parser_ts.add_argument("-t", "--sumtype", help="Summary type (default: absolute)", choices=["absolute", "relative"], default="absolute")
     parser_ts.add_argument("-l", "--level", help="Level <int> 1 to 7", choices=["1","2","3","4","5","6","7", "8"], default="3")
     #parser_bd.set_defaults(func=taxsum)
     parser_ts = subparsers.add_parser('pcoa')
-    parser_ts.add_argument('-i', '--infile-distance-matrix', help="Input file", type=argparse.FileType('r'))
+    parser_ts.add_argument('-i', '--infile-distance-matrix', help="Input file", type=argparse.FileType('r'), required=True)
     
     parser_ts = subparsers.add_parser('emperor')
-    parser_ts.add_argument('-i', '--infile-coords', help="Input file", type=argparse.FileType('r'))
-    parser_ts.add_argument('-m', '--mapping-file', help="Mapping file", type=argparse.FileType('r'))
-    parser_ts.add_argument('-o', '--outdir', help="Output directory")
+    parser_ts.add_argument('-i', '--infile-coords', help="Input file", type=argparse.FileType('r'), required=True)
+    parser_ts.add_argument('-m', '--mapping-file', help="Mapping file", type=argparse.FileType('r'), required=True)
+    parser_ts.add_argument('-o', '--outdir', help="Output directory", required=True)
     
     args = parser.parse_args(arguments)
     
     if args.command == 'betadiv':
         infile_feature_table = os.path.abspath(args.infile_feature_table.name)
         sys.stderr.write("[betadiv]\n")
-        if args.infile_tree is None and args.metric == "weighted-unifrac":
-            raise ValueError('weighted-unifrac needs a tree supplied. --infile-tree needed')
+        if args.infile_tree is None and args.metric in ("weighted-unifrac", "unweighted-unifrac"):
+            parser_bd.error(args.metric + ' needs a tree supplied: --infile-tree is required')
         
         if args.metric == "bray-curtis":
             betadiv(infile_feature_table, args.metric)

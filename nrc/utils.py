@@ -17,137 +17,123 @@ file format which is not needed in many case.
 """
 import sys
 import os
+from io import StringIO
 from numpy import array, concatenate, repeat, zeros, nan, asarray, where, isnan, float64, around
 from re import compile, sub
 from skbio.stats.ordination import pcoa
 from skbio.stats.distance import DistanceMatrix
 
-def parse_feature_table(lines,count_map_f=int):
-    """parses otu table (sample ID x OTU ID map)
 
-    Returns tuple: sample_ids, otu_ids, matrix of OTUs(rows) x samples(cols),
+class FeatureMissingError(Exception):
+    pass
+
+
+def parse_feature_table(lines,count_map_f=int):
+    """parses feature table (sample ID x feature ID map)
+
+    Returns tuple: sample_ids, feature_ids, matrix of features(rows) x samples(cols),
     and lineages from infile.
     """
     feature_table = []
-    otu_ids = []
+    feature_ids = []
     metadata = []
     sample_ids = []
-    # iterate over lines in the OTU table -- keep track of line number 
-    # to support legacy (Qiime 1.2.0 and earlier) OTU tables
+    # iterate over lines in the feature table -- keep track of line number 
+    # to support legacy (Qiime 1.2.0 and earlier) feature tables
     for i, line in enumerate(lines):
         #line = line.strip()
         
-        if line:
-            if line.startswith('# '):
-                next
+        if line.strip():
             if line.startswith('\t') and not sample_ids:
                 line = line.lstrip()
                 try:
                     sample_ids, has_metadata = process_feature_table_sample_ids(line.strip().split('\t')[0:])
                 except ValueError:
                     raise ValueError(
-                     "Error parsing sample IDs in OTU table. Appears to be a"+\
-                     " legacy OTU table. Sample ID line:\n %s" % line)
+                     "Error parsing sample IDs in feature table. Appears to be a"+\
+                     " legacy feature table. Sample ID line:\n %s" % line)
                 
                 sys.stderr.write("sample_ids: " + str(sample_ids) + "\n")
 
             elif line.startswith(('#FEATURE_ID', '#OTU ID', '#FEATURE ID', '#FEATURE', '#FEATUREID', 'contig_id', 'gene_id')) and not sample_ids:
-                # we've got a legacy OTU table
+                # we've got a legacy feature table
                 try:
                     sample_ids, has_metadata = process_feature_table_sample_ids(line.strip().split('\t')[1:])
                 except ValueError:
                     raise ValueError(
-                     "Error parsing sample IDs in OTU table. Appears to be a"+\
-                     " legacy OTU table. Sample ID line:\n %s" % line)
+                     "Error parsing sample IDs in feature table. Appears to be a"+\
+                     " legacy feature table. Sample ID line:\n %s" % line)
             elif not line.startswith('#'):
                 if not sample_ids:
                     # current line is the first non-space, non-comment line 
-                    # in OTU table, so contains the sample IDs
+                    # in feature table, so contains the sample IDs
                     try:
                         sample_ids, has_metadata = process_feature_table_sample_ids(
                          line.strip().split('\t')[1:])
                     except ValueError:
                         raise ValueError(
-                         "Error parsing sample IDs in OTU table."+\
+                         "Error parsing sample IDs in feature table."+\
                          " Sample ID line:\n %s" % line)
                 else:
-                    # current line is OTU line in OTU table
+                    # current line is feature line in feature table
                     fields = line.split('\t')
-                    # grab the OTU ID
-                    otu_id = fields[0].strip()
-                    otu_ids.append(otu_id)
+                    # grab the feature ID
+                    feature_id = fields[0].strip()
+                    feature_ids.append(feature_id)
                     if has_metadata:
-                        # if there is OTU metadata the last column gets appended
+                        # if there is feature metadata the last column gets appended
                         # to the metadata list
-                        # added in a try/except to handle OTU tables containing
+                        # added in a try/except to handle feature tables containing
                         # floating numbers
                         try:
                             feature_table.append(array(list(map(count_map_f, fields[1:-1]))))
                         except ValueError:
                             feature_table.append(array(list(map(float, fields[1:-1]))))
                             
-                        metadata.append(map(str.strip, fields[-1].split(';')))
+                        metadata.append([x.strip() for x in fields[-1].split(';')])
                     else:
                         # otherwise all columns are appended to feature_table
-                        # added in a try/except to handle OTU tables containing
+                        # added in a try/except to handle feature tables containing
                         # floating numbers
                         try:
                             feature_table.append(array(list(map(count_map_f,fields[1:]))))
                         except ValueError:
                             feature_table.append(array(list(map(float, fields[1:]))))
                         
-    return sample_ids, otu_ids, (feature_table), metadata
+    return sample_ids, feature_ids, (feature_table), metadata
 
 
 #####
-def getOtuTable(otu_source):
-    """Returns parsed OTU/FEATURE table from putative OTU/FEATURE source."""
+def getFeatureTable(feature_source):
+    """Returns parsed feature table from putative feature source."""
     
-    #if we have a string starting with #, assume it's an OTU file,
+    #if we have a string starting with #, assume it's a feature file,
     #otherwise assume it's a path
     # if 4-tuple, just return it
-    if type(otu_source) == type((1,3,4,44)):
-        return otu_source
-    if hasattr(otu_source, 'startswith') and otu_source.startswith('#'):
+    if type(feature_source) == type((1,3,4,44)):
+        return feature_source
+    if hasattr(feature_source, 'startswith') and feature_source.startswith('#'):
         try:
-            return parse_feature_table(StringIO(otu_source))
+            return parse_feature_table(StringIO(feature_source))
         except (TypeError, ValueError) as e:
-            raise OtuMissingError(
-                "Tried to read OTUs from string starting with # but got "+e)
+            raise FeatureMissingError(
+                "Tried to read features from string starting with # but got " + str(e))
     else:
         try:
-            otu_file = open(otu_source, 'r')
+            feature_file = open(feature_source, 'r')
         except (TypeError, IOError):
-            raise OtuMissingError(
-                "Couldn't read FEATURE table file at path: %s" % otu_source)
-        result = parse_feature_table(otu_file)
-        otu_file.close()
+            raise FeatureMissingError(
+                "Couldn't read FEATURE table file at path: %s" % feature_source)
+        result = parse_feature_table(feature_file)
+        feature_file.close()
         return result
 
 
-def getTree(tree_source):
-    """Returns parsed tree from putative tree source"""
-    if isinstance(tree_source, PhyloNode):
-        tree = tree_source    #accept tree object directly for tests
-    elif tree_source:
-        try:
-            f = open(tree_source, 'r')
-        except (TypeError, IOError):
-            raise TreeMissingError(
-                "Couldn't read tree file at path: %s" % tree_source)
-        tree = parse_newick(f, PhyloNode)
-        f.close()
-    else:
-        raise TreeMissingError( str(self.Name) + \
-            " is a phylogenetic metric, but no tree was supplied.")
-    return tree
-
-
 def process_feature_table_sample_ids(sample_id_fields):
-    """ process the sample IDs line of an OTU table """
+    """ process the sample IDs line of a feature table """
     if len(sample_id_fields) == 0:
             raise ValueError(
-             'Error parsing sample ID line in OTU table. Fields are %s' \
+             'Error parsing sample ID line in feature table. Fields are %s' \
              % ' '.join(sample_id_fields))
             
     # Detect if a metadata column is included as the last column. This
@@ -183,23 +169,23 @@ def make_summary(feature_table, level, upper_percentage, lower_percentage):
 
     total_counts = float(sum([sum(i) for i in counts_by_consensus.values()]))
     taxonomy_summary = []
-    for consensus, otu_counts in sorted(counts_by_consensus.items()):
+    for consensus, feature_counts in sorted(counts_by_consensus.items()):
         if lower_percentage!=None and \
-                                otu_counts.sum()/total_counts>lower_percentage:
+                                feature_counts.sum()/total_counts>lower_percentage:
             continue
         elif upper_percentage!=None and \
-                                otu_counts.sum()/total_counts<upper_percentage:
+                                feature_counts.sum()/total_counts<upper_percentage:
             continue
         new_row = [(consensus)]
-        new_row.extend(otu_counts)
+        new_row.extend(feature_counts)
         taxonomy_summary.append(new_row)
 
     return taxonomy_summary, header
 
 def sum_counts_by_consensus(feature_table, level, missing_name='Other'):
-    """Returns a dict keyed by consensus, valued by otu counts
+    """Returns a dict keyed by consensus, valued by feature counts
 
-    otu counts are summed together if they have the same consensus
+    feature counts are summed together if they have the same consensus
 
     if the consensus string doesn't reach to level, missing_name is appended on
     until the taxonomy string is of length level
@@ -233,21 +219,21 @@ def sum_counts_by_consensus(feature_table, level, missing_name='Other'):
 #def add_summary_mapping(feature_table, mapping, level): 
 #    """Returns sample summary of sample counts by taxon
 #    
-#    Summary is keyed by sample_id, valued by otu counts for each taxon
-#    Taxon order is a list of taxons where idx n corresponds to otu count idx n
+#    Summary is keyed by sample_id, valued by feature counts for each taxon
+#    Taxon order is a list of taxons where idx n corresponds to feature count idx n
 #    """
 #    counts_by_consensus, sample_map = sum_counts_by_consensus(feature_table, level)
 #    
 #    summary = defaultdict(list)
 #    for row in mapping:
-#        # grab otu idx if the sample exists, otherwise ignore it
+#        # grab feature idx if the sample exists, otherwise ignore it
 #        sample_id = row[0]
 #        if sample_id not in sample_map:
 #            continue
-#        otu_idx = sample_map[sample_id]
+#        feature_idx = sample_map[sample_id]
 #
 #        for consensus, counts in sorted(counts_by_consensus.items()):
-#            summary[sample_id].append(counts[otu_idx])
+#            summary[sample_id].append(counts[feature_idx])
 #
 #    taxon_order = sorted(counts_by_consensus.keys())
 #
@@ -283,54 +269,29 @@ def format_summarize_taxa(summary, header, delimiter=';'):
         taxon = row[0]
         line = [delimiter.join(taxon)]
 
-        # add on otu counts
+        # add on feature counts
         line.extend(map(str, around(row[1:], 3)))
 
         yield "%s\n" % '\t'.join(line)
 
 def convert_feature_table_relative(feature_table):
-    """Convert the OTU table to relative abundances
+    """Convert the feature table to relative abundances
 
-    this method works on a parsed OTU table
+    this method works on a parsed feature table
     """
-    sample_ids, otu_ids, otu_counts, consensus = feature_table
-    otu_counts = asarray(otu_counts, float)
-    otu_counts = otu_counts / otu_counts.sum(axis=0)
-    otu_counts = where(isnan(otu_counts), 0.0, otu_counts)
-    return (sample_ids, otu_ids, otu_counts, consensus)
-
-def parse_distmat(infile):
-    """Parser for distance matrix file (e.g. UniFrac dist matrix).
-
-    The examples I have of this file are just sample x sample tab-delimited
-    text, so easiest way to handle is just to convert into a numpy array
-    plus a list of field names. TODO: make sure square matrix is provided.
-    """
-
-    header = None
-    result = []
-    lines = open(infile, 'r')
-    for line in lines:
-        if line[0] == '\t': #is header
-            header = list(map(str.strip, line.split('\t')[1:]))
-            #sys.stderr.write(str(header) + "\n");
-        else:
-            tmp = list(map(float, line.split('\t')[1:]))
-            result.append(tmp)
-    
-    result = asarray(result, dtype=float)
-    #print(result)
-    return(header, result)
+    sample_ids, feature_ids, feature_counts, consensus = feature_table
+    feature_counts = asarray(feature_counts, float)
+    feature_counts = feature_counts / feature_counts.sum(axis=0)
+    feature_counts = where(isnan(feature_counts), 0.0, feature_counts)
+    return (sample_ids, feature_ids, feature_counts, consensus)
 
 def do_pcoa(infile):
-    samples, distmtx = parse_distmat(infile)
-    # coords, each row is an axis
-    distmtx = DistanceMatrix(distmtx, ids=samples)
-    ord_res = pcoa(distmtx)
-    coords = ord_res.samples
-    eigvals = ord_res.eigvals
-    pcnts = ord_res.proportion_explained
-    
-    #Write results to output
-    ord_res.write(sys.stdout)
+    """Run PCoA on a tab-separated (lsmat) distance matrix and write the
+    ordination results to stdout.
 
+    DistanceMatrix.read() checks that the matrix is square, symmetric and
+    that row labels match the header in the same order.
+    """
+    distmtx = DistanceMatrix.read(infile, format='lsmat')
+    ord_res = pcoa(distmtx)
+    ord_res.write(sys.stdout)
