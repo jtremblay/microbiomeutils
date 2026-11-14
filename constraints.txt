@@ -1,0 +1,53 @@
+# Exact versions of all runtime dependencies, including transitive ones, as
+# installed in the tested Docker image (Python 3.11, built from requirements.txt).
+# Used as a pip constraints file so builds are reproducible:
+#   pip install -r requirements.txt -c constraints.txt
+# Direct dependencies are pinned in requirements.txt; update both files together.
+# Regenerate from a built image with:
+#   docker run --rm --entrypoint pip IMAGE freeze | grep -viE '^(pip|setuptools|wheel|packaging)=='
+asttokens==3.0.2
+certifi==2026.10.23
+charset-normalizer==3.5.2
+click==8.5.1
+contourpy==1.3.3
+cycler==0.12.1
+Cython==3.3.1
+decorator==5.3.1
+emperor==1.0.4
+executing==2.3.0
+fonttools==4.68.0
+future==1.0.0
+h5py==3.16.0
+hdmedians==0.14.2
+idna==3.20
+ipython==9.18.1
+ipython_pygments_lexers==1.1.1
+jedi==0.20.1
+Jinja2==3.1.6
+kiwisolver==1.5.1
+MarkupSafe==3.0.4
+matplotlib==3.11.2
+matplotlib-inline==0.2.2
+natsort==8.4.0
+numpy==1.26.4
+pandas==2.2.0
+parso==0.8.7
+pexpect==4.9.0
+pillow==13.0.0
+prompt_toolkit==3.0.53
+psutil==7.2.2
+ptyprocess==0.7.0
+pure_eval==0.2.4
+Pygments==2.21.0
+pyparsing==3.3.3
+python-dateutil==4.0.0
+pytz==2026.6
+requests==2.34.2
+scikit-bio==0.5.9
+scipy==1.10.1
+stack-data==0.6.3
+traitlets==5.16.1
+typing_extensions==4.16.0
+tzdata==2026.6
+urllib3==2.8.0
+wcwidth==0.9.4
