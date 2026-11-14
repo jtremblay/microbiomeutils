@@ -1,0 +1,13 @@
+# Only microbiomeutils.py, nrc/, tests/ and requirements.txt are needed in the image.
+.git
+.github
+.gitignore
+.dockerignore
+Dockerfile
+venv/
+.venv/
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+data/
+*.md
