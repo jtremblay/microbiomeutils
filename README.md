@@ -25,6 +25,45 @@ pip install -r requirements.txt
 `requirements.txt` pins the versions the tool was tested with (notably scikit-bio 0.5.9).
 Installing newer versions of scikit-bio or emperor is not yet supported.
 
+## Docker / Apptainer
+A container image with all dependencies is published on the GitHub Container Registry as
+`ghcr.io/jtremblay/microbiomeutils` (tags: `<version>`, e.g. `0.9.5`; `latest` = latest release;
+`main` = current `main` branch). The image runs `microbiomeutils.py` directly, so pass the
+subcommand and its options as arguments.
+
+### Docker
+The image's working directory is `/data`: mount the directory holding your files there and use
+relative paths.
+
+```sh
+docker run --rm -v "$PWD:/data" ghcr.io/jtremblay/microbiomeutils:0.9.5 \
+    betadiv -i feature_table.tsv -m bray-curtis > bc_res.tsv
+```
+
+For `emperor`, also add `-u "$(id -u):$(id -g)"` so that the output folder is created with your
+user ID.
+
+### Apptainer (e.g. Alliance / Digital Research Alliance of Canada clusters)
+Build the `.sif` image once, inside an interactive job (`salloc`) rather than on a login node, and
+store it in `/project` (not in `$SLURM_TMPDIR`, which is deleted at the end of the job):
+
+```sh
+module load apptainer
+export APPTAINER_CACHEDIR=$SLURM_TMPDIR
+apptainer build microbiomeutils_0.9.5.sif docker://ghcr.io/jtremblay/microbiomeutils:0.9.5
+```
+
+Then run it:
+
+```sh
+apptainer run -C -B /project -B /scratch -W $SLURM_TMPDIR microbiomeutils_0.9.5.sif \
+    taxsum -i feature_table.tsv -l 6 > taxonomy_L6.tsv
+```
+
+With Apptainer, the working directory is your current directory on the host (not `/data`), so
+relative paths refer to it. Run the command from a directory under `/project` or `/scratch`: with
+`-C`, host directories (including `$HOME`) are only visible in the container if bound with `-B`.
+
 ## Usage
 ```sh
 ./microbiomeutils.py -h
