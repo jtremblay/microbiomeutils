@@ -13,8 +13,11 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /tmp/requirements.txt
-RUN pip wheel --no-cache-dir -r /tmp/requirements.txt -w /wheels
+COPY requirements.txt constraints.txt /tmp/
+# PIP_CONSTRAINT also applies to the isolated build environments, so the
+# numpy/Cython used to compile scikit-bio and hdmedians are pinned too.
+RUN PIP_CONSTRAINT=/tmp/constraints.txt \
+    pip wheel --no-cache-dir -r /tmp/requirements.txt -w /wheels
 
 # --- Runtime -------------------------------------------------------------
 FROM ${PYTHON_IMAGE}
@@ -31,10 +34,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     MPLCONFIGDIR=/tmp/matplotlib
 
-COPY requirements.txt /tmp/requirements.txt
+COPY requirements.txt constraints.txt /tmp/
 RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
-    pip install --no-cache-dir --no-index --find-links=/wheels -r /tmp/requirements.txt \
-    && rm /tmp/requirements.txt
+    pip install --no-cache-dir --no-index --find-links=/wheels \
+        -r /tmp/requirements.txt -c /tmp/constraints.txt \
+    && rm /tmp/requirements.txt /tmp/constraints.txt
 
 # microbiomeutils.py imports nrc relative to its own directory: keep them side by side.
 COPY microbiomeutils.py /opt/microbiomeutils/

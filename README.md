@@ -24,6 +24,9 @@ pip install -r requirements.txt
 
 `requirements.txt` pins the versions the tool was tested with (notably scikit-bio 0.5.9).
 Installing newer versions of scikit-bio or emperor is not yet supported.
+`constraints.txt` additionally pins every indirect dependency to the versions used in the Docker
+image; to reproduce that environment exactly, use
+`pip install -r requirements.txt -c constraints.txt`.
 
 ## Docker / Apptainer
 A container image with all dependencies is published on the GitHub Container Registry as
