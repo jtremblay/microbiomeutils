@@ -30,7 +30,7 @@ image; to reproduce that environment exactly, use
 
 ## Docker / Apptainer
 A container image with all dependencies is published on the GitHub Container Registry as
-`ghcr.io/jtremblay/microbiomeutils` (tags: `<version>`, e.g. `0.9.5`; `latest` = latest release;
+`ghcr.io/jtremblay/microbiomeutils` (tags: `<version>`, e.g. `0.9.6`; `latest` = latest release;
 `main` = current `main` branch). The image runs `microbiomeutils.py` directly, so pass the
 subcommand and its options as arguments.
 
@@ -39,7 +39,7 @@ The image's working directory is `/data`: mount the directory holding your files
 relative paths.
 
 ```sh
-docker run --rm -v "$PWD:/data" ghcr.io/jtremblay/microbiomeutils:0.9.5 \
+docker run --rm -v "$PWD:/data" ghcr.io/jtremblay/microbiomeutils:0.9.6 \
     betadiv -i feature_table.tsv -m bray-curtis > bc_res.tsv
 ```
 
@@ -53,13 +53,13 @@ store it in `/project` (not in `$SLURM_TMPDIR`, which is deleted at the end of t
 ```sh
 module load apptainer
 export APPTAINER_CACHEDIR=$SLURM_TMPDIR
-apptainer build microbiomeutils_0.9.5.sif docker://ghcr.io/jtremblay/microbiomeutils:0.9.5
+apptainer build microbiomeutils_0.9.6.sif docker://ghcr.io/jtremblay/microbiomeutils:0.9.6
 ```
 
 Then run it:
 
 ```sh
-apptainer run -C -B /project -B /scratch -W $SLURM_TMPDIR microbiomeutils_0.9.5.sif \
+apptainer run -C -B /project -B /scratch -W $SLURM_TMPDIR microbiomeutils_0.9.6.sif \
     taxsum -i feature_table.tsv -l 6 > taxonomy_L6.tsv
 ```
 
@@ -164,5 +164,5 @@ MIT; see [LICENSE](LICENSE).
 ## Citation
 If you use microbiomeutils in your work, please cite:
 
-Tremblay, Julien. microbiomeutils 0.9.5: Microbiome utilities.
+Tremblay, Julien. microbiomeutils 0.9.6: Microbiome utilities.
 https://github.com/jtremblay/microbiomeutils
