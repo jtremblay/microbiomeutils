@@ -34,6 +34,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     MPLCONFIGDIR=/tmp/matplotlib
 
+# procps provides ps, which workflow managers such as Nextflow need inside the
+# container to collect task metrics (CPU, memory).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends procps \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt constraints.txt /tmp/
 RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
     pip install --no-cache-dir --no-index --find-links=/wheels \
