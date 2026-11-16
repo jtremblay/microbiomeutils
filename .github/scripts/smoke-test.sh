@@ -32,6 +32,10 @@ check() {  # check NAME ACTUAL EXPECTED
 
 run -h > /dev/null
 
+# Nextflow runs tasks with bash and needs ps to collect task metrics.
+docker run --rm --entrypoint bash "$image" -c 'command -v ps' > /dev/null
+echo "ok   bash + ps (Nextflow)"
+
 # Distance matrices must be byte-identical to the reference outputs.
 run betadiv -i feature_table.tsv -m bray-curtis > "$out/bc.tsv"
 check bray-curtis "$out/bc.tsv" "$data/bc_res.tsv"
